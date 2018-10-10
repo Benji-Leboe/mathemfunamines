@@ -2,54 +2,68 @@ require_relative "player"
 require_relative "game"
 require_relative "question"
 
-class Turnloop
+class Gameloop
 
   def initialize(player1 = "Player 1", player2 = "Player 2")
 
     @player1 = Player.new(player1)
     @player2 = Player.new(player2)
-    @question = Question.new
     @game = Game.new
     @turn = 0
     
   end
-
   
   def new_turn
-    @game.new_turn_msg(@player1, @player2)
     @turn += 1
+    puts @game.new_turn_msg(@player1, @player2)
   end
 
-  def turn_loop
+  def answer?
+    gets.chomp.upcase
+  end
+
+  def check_answer?(num1, num2)
+    (num1 + num2).to_s(16).upcase
+  end
+
+  def verify?(check, response)
+    check == response
+  end
+
+  def init_game
 
     def pick_player(player1, player2)
-      first_player = (rand(0..1) > 1) ? player1 : player2
+      first_player = (rand(0..1) < 1) ? player1 : player2
     
       next_player = (first_player == player1) ? player2 : player1
 
       puts "#{first_player.name} is going first. Better luck next time, #{next_player.name}!\n"  
       
-      return first_player
+      first_player
     end
 
     current_player = pick_player(@player1, @player2)
 
-    while current_player.get_lives? do
-      
+    while current_player.alive? do
+      q = Question.new
+
       new_turn
 
-      @question.ask_question(current_player)
+      check = check_answer?(q.num1, q.num2)
 
-      @question.check_answer? ? 
-         @question.correct_answer(current_player) :
-        (@question.incorrect_answer(current_player); current_player.lose_life)
+      puts q.ask_question(current_player, q.num1, q.num2)
+
+      response = answer?
+
+      verify?(check, response) ? 
+        (puts @game.correct_answer(current_player)) :
+        (puts @game.incorrect_answer(check, current_player); current_player.lose_life)
 
       current_player = current_player == @player1 ? @player2 : @player1
-
     end
-  
-    unless current_player.get_lives?
-      @game.game_over_msg(@player1, @player2)
+
+    unless current_player.alive?
+      puts @game.game_over_msg(@player1, @player2)
     end
 
   end
@@ -64,8 +78,8 @@ def game_init
   p2 = gets.chomp
   puts "\nGood luck!\n"
 
-  new_game = Turnloop.new(p1, p2)
-  new_game.turn_loop
+  new_game = Gameloop.new(p1, p2)
+  new_game.init_game
 
 end
 
