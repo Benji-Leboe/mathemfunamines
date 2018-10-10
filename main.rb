@@ -22,14 +22,6 @@ class Gameloop
     gets.chomp.upcase
   end
 
-  def check_answer?(num1, num2)
-    (num1 + num2).to_s(16).upcase
-  end
-
-  def verify?(check, response)
-    check == response
-  end
-
   def init_game
 
     def pick_player(player1, player2)
@@ -49,15 +41,13 @@ class Gameloop
 
       new_turn
 
-      check = check_answer?(q.num1, q.num2)
-
-      puts q.ask_question(current_player, q.num1, q.num2)
+      puts q.ask_question(current_player)
 
       response = answer?
 
-      verify?(check, response) ? 
+      q.verify?(response) ? 
         (puts @game.correct_answer(current_player)) :
-        (puts @game.incorrect_answer(check, current_player); current_player.lose_life)
+        (puts @game.incorrect_answer(q.check?, current_player); current_player.lose_life)
 
       current_player = current_player == @player1 ? @player2 : @player1
     end
